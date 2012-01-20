@@ -98,8 +98,6 @@
 	//NSArray *trackIDs = [[dObject arrayForType:QSiTunesTrackIDPboardType] valueForKey:@"Track ID"];
 	NSArray *paths = [dObject validPaths];
 	
-	if (!paths) return nil;
-	
 	//return;
 	NSDictionary *errorDict = nil;
 	
@@ -111,9 +109,13 @@
 		iTunesPlaylist *iTunesDJ = QSiTunesDJ();
 		if (next) {
 			//ps_play_next_track can handle a list
-			[[self iTunesScript] executeSubroutine:@"ps_play_next_track" 
-										 arguments:[NSArray arrayWithObject:[NSAppleEventDescriptor aliasListDescriptorWithArray:paths]] 
-											 error:&errorDict];
+            if (!paths) {
+                NSLog(@"can't presently add a track w/o a path to itunes dj. sorry.");
+            } else {
+                [[self iTunesScript] executeSubroutine:@"ps_play_next_track" 
+                                             arguments:[NSArray arrayWithObject:[NSAppleEventDescriptor aliasListDescriptorWithArray:paths]] 
+                                                 error:&errorDict];
+            }
 			// TODO get this to work via Scripting Bridge?
 //			if (![[[iTunes currentTrack] container] isEqualTo:iTunesDJ]) {
 //				// iTunes DJ wasn't already playing - start it
@@ -133,10 +135,14 @@
 		} else if (append) {
 			[iTunes add:newTracks to:iTunesDJ];
 		} else {
-			// Play first track, queue rest
-			[[self iTunesScript] executeSubroutine:@"ps_play_track" 
-										 arguments:[NSArray arrayWithObject:[NSAppleEventDescriptor aliasListDescriptorWithArray:paths]]
-											 error:&errorDict];
+            if (!paths) {
+                NSLog(@"can't presently add a track w/o a path to itunes dj. sorry.");
+            } else {
+            
+                [[self iTunesScript] executeSubroutine:@"ps_play_track" 
+                                             arguments:[NSArray arrayWithObject:[NSAppleEventDescriptor aliasListDescriptorWithArray:paths]]
+                                                 error:&errorDict];
+            }
 		}
 	} else if (append) {
 		iTunesPlaylist *qs = [[QSiTunesLibrary() userPlaylists] objectWithName:QSiTunesDynamicPlaylist];
@@ -144,11 +150,15 @@
 	} else {
 		NSString *playlist = [dObject objectForMeta:@"QSiTunesSourcePlaylist"];
 		if (playlist) {
-			[[self iTunesScript] executeSubroutine:@"play_track_in_playlist"
-										 arguments:[NSArray arrayWithObjects:
-											 [NSAppleEventDescriptor aliasListDescriptorWithArray:paths] ,
-											 playlist, nil]
-											 error:&errorDict];
+            if (!paths) {
+                NSLog(@"can't presently add a track w/o a path to itunes dj. sorry.");
+            } else {            
+                [[self iTunesScript] executeSubroutine:@"play_track_in_playlist"
+                                             arguments:[NSArray arrayWithObjects:
+                                                 [NSAppleEventDescriptor aliasListDescriptorWithArray:paths] ,
+                                                 playlist, nil]
+                                                 error:&errorDict];
+            }
 
 		} else {
 			if ([trackResult count] == 1) {
